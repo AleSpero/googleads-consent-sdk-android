@@ -38,11 +38,18 @@ import com.google.gson.Gson;
 import java.io.ByteArrayOutputStream;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Locale;
 
 /**
  * A Google rendered form for collecting consent from a user.
  */
 public class ConsentForm {
+
+    private static final String LANGUAGE_IT = "it";
+
+    private String consentFormPath = "file:///android_asset/";
+    private String consentFormFileName = "consentform";
+    private String consentFormFileName_ext = ".html";
 
     private final ConsentFormListener listener;
     private final Context context;
@@ -256,7 +263,7 @@ public class ConsentForm {
         webView.loadUrl(javascriptCommand);
     }
 
-    public void load() {
+    public void load(Locale locale) {
         if (this.loadState == LoadState.LOADING) {
             listener.onConsentFormError("Cannot simultaneously load multiple consent forms.");
             return;
@@ -268,7 +275,16 @@ public class ConsentForm {
         }
 
         this.loadState = LoadState.LOADING;
-        this.webView.loadUrl("file:///android_asset/consentform.html");
+
+        if(locale != null)
+            this.webView.loadUrl(String.format("%s%s-%s%s",consentFormPath,consentFormFileName,locale.getDisplayLanguage(),consentFormFileName_ext));
+        else
+            this.webView.loadUrl(String.format("%s%s%s",consentFormPath,consentFormFileName,consentFormFileName_ext));
+
+    }
+
+    public void load(){
+        load(Locale.getDefault());
     }
 
     private void handleLoadComplete(String status) {
